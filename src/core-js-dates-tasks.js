@@ -247,7 +247,8 @@ function getNextFridayThe13th(date) {
  * Date(2024, 10, 10) => 4
  */
 function getQuarter(date) {
-  
+  const month = date.getMonth();
+  return Math.floor(month / 3) + 1;
 }
 
 /**
@@ -268,10 +269,42 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
-}
 
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  function parseDate(dateStr) {
+    const [day, month, year] = dateStr.split('-');
+    return new Date(`${year}-${month}-${day}`);
+  }
+
+  const startDate = parseDate(period.start);
+  const endDate = parseDate(period.end);
+  const workSchedule = [];
+  const date = new Date(startDate);
+
+  while (date <= endDate) {
+    const currentMonth = date.getMonth() + 1;
+    const daysInMonth = new Date(date.getFullYear(), currentMonth, 0).getDate();
+
+    for (let i = 0; i < countWorkDays; i += 1) {
+      if (date.getDate() <= daysInMonth && date <= endDate) {
+        const formattedDate = date.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+        const [day2, month2, year2] = formattedDate.split('/');
+        workSchedule.push(`${day2}-${month2}-${year2}`);
+      }
+      date.setDate(date.getDate() + 1);
+    }
+
+    for (let i = 0; i < countOffDays; i += 1) {
+      date.setDate(date.getDate() + 1);
+    }
+  }
+
+  return workSchedule;
+}
 /**
  * Determines whether the year in the provided date is a leap year.
  * A leap year is a year divisible by 4, but not by 100, unless it is also divisible by 400.
